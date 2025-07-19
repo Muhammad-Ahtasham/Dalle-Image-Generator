@@ -20,26 +20,27 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 # Generate the image
 def generate_image(imagePrompt):
     print("generate image called with prompt", imagePrompt)
-    response = client.images.generate(
-        model="dall-e-3",  # correct model name for image generation
-        prompt=imagePrompt,
-        size="1024x1024",
-        quality="standard",
-        n=1,  # Only one image allowed
+    response = client.responses.create(
+        model="gpt-4.1-mini",
+        input=imagePrompt,
+        tools=[{"type": "image_generation"}]
     )
 
-    image_urls = []
+    image_data = [
+        output.result
+        for output in response.output
+        if output.type == "image_generation_call"
+    ]
+
     saved_files = []
-    if response.data and len(response.data) > 0:
-        data = response.data[0]
-        image_url = data.url
-        image_urls.append(image_url)
-        if image_url is not None:
-            img_data = requests.get(image_url).content
-            filename = f"Generated Images/{uuid.uuid4().hex}.png"
-            with open(filename, "wb") as f:
-                f.write(img_data)
-            saved_files.append(filename)
+    if image_data:
+        image_base64 = image_data[0]
+        if not isinstance(image_base64, str):
+            raise TypeError("Expected base64 string, got something else.")
+        filename = f"Generated Images/{uuid.uuid4().hex}.png"
+        with open(filename, "wb") as f:
+            f.write(base64.b64decode(image_base64))
+        saved_files.append(filename)
     else:
         raise ValueError("No image data returned in response.")
 
