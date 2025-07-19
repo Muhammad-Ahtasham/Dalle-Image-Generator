@@ -3,6 +3,7 @@ from flask import render_template
 from flask import request, redirect, url_for, send_file, jsonify, send_from_directory
 from generate_image import generate_image
 import os
+import traceback
 
 app = Flask(__name__)
 
@@ -20,6 +21,8 @@ def generate():
             image_urls = [url_for('generated_image', filename=os.path.basename(f)) for f in saved_files]
             return jsonify({'image_urls': image_urls}), 200
         except Exception as e:
+            print("Exception occurred:", e)
+            traceback.print_exc()
             return jsonify({'error': str(e)}), 500
     return jsonify({'error': 'No prompt provided'}), 400
 

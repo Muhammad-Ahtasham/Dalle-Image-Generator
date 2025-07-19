@@ -25,6 +25,7 @@ def generate_image(imagePrompt):
         input=imagePrompt,
         tools=[{"type": "image_generation"}]
     )
+    print("OpenAI response:", response)
 
     image_data = [
         output.result
