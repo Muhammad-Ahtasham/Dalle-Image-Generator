@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DALL·E Image Generator</title>
+    <style>
+        body { margin: 0; font-family: Arial, sans-serif; background: #f4f4f4; }
+        .navbar { background: #222; color: #fff; padding: 1rem; text-align: center; font-size: 1.5rem; display: flex; justify-content: center; gap: 2rem; }
+        .navbar a { color: #fff; text-decoration: none; font-size: 1.1rem; padding: 0.5rem 1rem; border-radius: 4px; transition: background 0.2s; }
+        .navbar a.active, .navbar a:hover { background: #444; }
+        .container { max-width: 500px; margin: 2rem auto; background: #fff; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 1.5rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: bold; }
+        input[type="text"] { width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; }
+        button { padding: 0.75rem 2rem; background: #007bff; color: #fff; border: none; border-radius: 4px; font-size: 1rem; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .loading { display: none; text-align: center; margin: 1rem 0; }
+        .images { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; margin-top: 2rem; }
+        .image-container {
+            position: relative;
+            display: inline-block;
+        }
+        .download-icon {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.6);
+            border-radius: 50%;
+            padding: 6px;
+            display: none;
+            cursor: pointer;
+            z-index: 2;
+        }
+        .image-container:hover .download-icon {
+            display: block;
+        }
+        .images img { max-width: 150px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" id="nav-home">Home</a>
+        <a href="/gallery" id="nav-gallery">Gallery</a>
+        <a href="/about" id="nav-about">About Us</a>
+    </nav>
+    <div class="container">
+        <form id="generate-form" action="/generate" method="post">
+            <div class="form-group">
+                <label for="prompt">Enter your image prompt:</label>
+                <input type="text" id="prompt" name="prompt" required>
+            </div>
+            <div style="display: flex; justify-content: center;">
+                <button type="submit">Generate Image</button>
+            </div>
+        </form>
+        <div class="loading" id="loading">
+            <img src="https://i.gifer.com/ZZ5H.gif" alt="Loading..." width="50" height="50">
+            <div>Generating images, please wait...</div>
+        </div>
+        <div class="images" id="images"></div>
+    </div>
+    <script>
+        // Highlight current nav link
+        const path = window.location.pathname;
+        if (path === '/') document.getElementById('nav-home').classList.add('active');
+        else if (path.startsWith('/gallery')) document.getElementById('nav-gallery').classList.add('active');
+        else if (path.startsWith('/about')) document.getElementById('nav-about').classList.add('active');
+
+        const form = document.getElementById('generate-form');
+        const loading = document.getElementById('loading');
+        const imagesDiv = document.getElementById('images');
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            imagesDiv.innerHTML = '';
+            loading.style.display = 'block';
+            const formData = new FormData(form);
+            const response = await fetch('/generate', {
+                method: 'POST',
+                body: formData
+            });
+            loading.style.display = 'none';
+            // Clear the prompt field after submission (success or fail)
+            form.prompt.value = '';
+            if (response.ok) {
+                const data = await response.json();
+                if (data.image_urls) {
+                    data.image_urls.forEach(url => {
+                        const container = document.createElement('div');
+                        container.className = 'image-container';
+                        const img = document.createElement('img');
+                        img.src = url;
+                        // Download icon
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = '';
+                        a.className = 'download-icon';
+                        a.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`;
+                        container.appendChild(img);
+                        container.appendChild(a);
+                        imagesDiv.appendChild(container);
+                    });
+                }
+            } else {
+                imagesDiv.innerHTML = '<div style="color:red;">Failed to generate images.</div>';
+            }
+        });
+    </script>
+</body>
+</html>
