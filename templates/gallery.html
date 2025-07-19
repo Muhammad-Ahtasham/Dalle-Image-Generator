@@ -11,6 +11,24 @@
         .navbar a.active, .navbar a:hover { background: #444; }
         .container { max-width: 900px; margin: 2rem auto; background: #fff; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
         .images { display: flex; flex-wrap: wrap; gap: 1.5rem; justify-content: center; margin-top: 2rem; }
+        .image-container {
+            position: relative;
+            display: inline-block;
+        }
+        .download-icon {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.6);
+            border-radius: 50%;
+            padding: 6px;
+            display: none;
+            cursor: pointer;
+            z-index: 2;
+        }
+        .image-container:hover .download-icon {
+            display: block;
+        }
         .images img { max-width: 200px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
     </style>
 </head>
@@ -24,7 +42,12 @@
         <h2>Gallery</h2>
         <div class="images">
             {% for filename in image_files %}
-                <img src="/generated_images/{{ filename }}" alt="Generated Image">
+                <div class="image-container">
+                    <img src="/generated_images/{{ filename }}" alt="Generated Image">
+                    <a href="/generated_images/{{ filename }}" download class="download-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    </a>
+                </div>
             {% else %}
                 <div>No images found.</div>
             {% endfor %}
